@@ -1,0 +1,135 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+def propertyFile =file('../keystore.properties')
+
+if (propertyFile.exists()) {
+    Properties props = new Properties()
+    props.load(new FileInputStream(propertyFile))
+    props.each { prop ->
+        project.ext.set(prop.key, prop.value)
+    }
+}
+
+def keystore_password = project.hasProperty('KEYSTORE_PASSWORD') ? KEYSTORE_PASSWORD : System.getenv("KEYSTORE_PASSWORD")
+def key_alias = project.hasProperty('KEY_ALIAS') ? KEY_ALIAS : System.getenv("KEY_ALIAS")
+def key_password = project.hasProperty('KEY_PASSWORD') ? KEY_PASSWORD : System.getenv("KEY_PASSWORD")
+android {
+    signingConfigs {
+        release {
+            storeFile file('../keystore.jks')
+            storePassword keystore_password
+            keyAlias key_alias
+            keyPassword key_password
+
+        }
+
+    }
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    dataBinding {
+        enabled = true
+    }
+    defaultConfig {
+        applicationId "com.methods.retrofitmvvm"
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+        }
+        debug{
+            minifyEnabled false
+
+        }
+    }
+    flavorDimensions "Client", "Server"
+    productFlavors {
+        free {
+
+
+            dimension "Client"
+
+            resValue "string", "app_name", "ReceipeTrail"
+            applicationIdSuffix ".free"
+        }
+        paid {
+            dimension "Client"
+
+            resValue "string", "app_name", "Receipe"
+        }
+
+        dev {
+            buildConfigField "String", "BASE_URL", "\"https://recipesapi.herokuapp.com/\""
+            dimension "Server"
+        }
+        staging {
+            buildConfigField "String", "BASE_URL",  "\"https://recipesapi.herokuapp.com/\""
+            dimension "Server"
+        }
+        production {
+            buildConfigField "String", "BASE_URL",  "\"https://recipesapi.herokuapp.com/\""
+            dimension "Server"
+        }
+
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+}
+
+
+dependencies {
+    def retrofit_version = "2.9.0"
+    def okhttp_version = "4.7.2"
+
+    def lifecycle_version = "2.2.0"
+    def arch_version = "2.1.0"
+    def recyle_version = "1.1.0"
+    def recyle_selection_version = "1.1.0-rc01"
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
+    // viewmodel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    // save state
+
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+
+    // Annotation processor
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    implementation "androidx.recyclerview:recyclerview:$recyle_version"
+    // For control over item selection of both touch and mouse driven selection
+    implementation "androidx.recyclerview:recyclerview-selection:$recyle_selection_version"
+    implementation "androidx.cardview:cardview:1.0.0"
+
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+
+    implementation "com.google.android.material:material:1.3.0-alpha01"
+}
